@@ -13,3 +13,11 @@
 现代化的 Material Design 界面
 
 ### 如何使用AI生成该页面
+```bash 
+# Install CLI globally
+npm install -g uipro-cli@latest
+
+# Go to your project
+cd /path/to/your/project
+uipro init --ai cursor
+```

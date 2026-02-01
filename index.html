@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FFFBFE">
   <title>计算器</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -59,6 +60,7 @@
     body {
       font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -66,43 +68,48 @@
       background: var(--md-sys-color-surface);
       color: var(--md-sys-color-on-surface);
       transition: background-color 0.2s, color 0.2s;
+      padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(16px, env(safe-area-inset-left));
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      overflow-x: hidden;
     }
 
     .calculator {
-      width: min(100%, 360px);
-      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      padding: clamp(16px, 5vw, 24px);
       background: var(--md-sys-color-surface-container);
       border-radius: var(--md-sys-shape-corner-extra-large);
       box-shadow: var(--md-sys-elevation-3);
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: clamp(12px, 3vw, 24px);
     }
 
     .display-area {
-      min-height: 120px;
+      min-height: clamp(100px, 25vw, 120px);
       display: flex;
       flex-direction: column;
       align-items: flex-end;
       justify-content: flex-end;
-      padding: 16px 20px;
+      padding: clamp(12px, 3vw, 16px) clamp(16px, 4vw, 20px);
       background: var(--md-sys-color-surface-container-high);
       border-radius: var(--md-sys-shape-corner-large);
       overflow: hidden;
     }
 
     .expression {
-      font-size: 1rem;
+      font-size: clamp(0.875rem, 2.5vw, 1rem);
       font-weight: 400;
       color: var(--md-sys-color-secondary);
-      min-height: 24px;
+      min-height: 22px;
       margin-bottom: 4px;
       word-break: break-all;
       text-align: right;
     }
 
     .result {
-      font-size: 3rem;
+      font-size: clamp(2rem, 8vw, 3rem);
       font-weight: 700;
       letter-spacing: -0.02em;
       line-height: 1.2;
@@ -114,16 +121,17 @@
     .buttons-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      gap: clamp(8px, 2vw, 12px);
     }
 
     .btn {
       aspect-ratio: 1;
-      min-height: 64px;
+      min-height: 52px;
+      min-width: 52px;
       border: none;
       border-radius: var(--md-sys-shape-corner-large);
       font-family: inherit;
-      font-size: 1.5rem;
+      font-size: clamp(1.25rem, 4vw, 1.5rem);
       font-weight: 500;
       cursor: pointer;
       display: flex;
@@ -132,6 +140,10 @@
       transition: background-color 0.15s, transform 0.1s;
       position: relative;
       overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .btn::after {
@@ -155,6 +167,45 @@
     .btn:focus-visible {
       outline: 2px solid var(--md-sys-color-primary);
       outline-offset: 2px;
+    }
+
+    @media (max-width: 360px) {
+      .calculator {
+        padding: 12px;
+      }
+      .buttons-grid {
+        gap: 6px;
+      }
+      .btn {
+        min-height: 48px;
+        min-width: 48px;
+        font-size: 1.25rem;
+      }
+    }
+
+    @media (max-height: 500px) and (orientation: landscape) {
+      body {
+        padding-top: 8px;
+        padding-bottom: 8px;
+        justify-content: flex-start;
+      }
+      .calculator {
+        gap: 8px;
+        padding: 12px;
+      }
+      .display-area {
+        min-height: 60px;
+      }
+      .result {
+        font-size: clamp(1.5rem, 5vh, 2rem);
+      }
+      .buttons-grid {
+        gap: 6px;
+      }
+      .btn {
+        min-height: 44px;
+        min-width: 44px;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -203,10 +254,12 @@
 
     .theme-toggle {
       position: fixed;
-      top: 16px;
-      right: 16px;
+      top: max(16px, env(safe-area-inset-top));
+      right: max(16px, env(safe-area-inset-right));
       width: 48px;
       height: 48px;
+      min-width: 48px;
+      min-height: 48px;
       border: none;
       border-radius: 24px;
       background: var(--md-sys-color-primary-container);
@@ -217,6 +270,9 @@
       justify-content: center;
       box-shadow: var(--md-sys-elevation-1);
       transition: background-color 0.2s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      z-index: 100;
     }
 
     .theme-toggle:hover {
@@ -480,10 +536,19 @@
       }
     });
 
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    function setThemeColor(isDark) {
+      if (themeColorMeta) themeColorMeta.content = isDark ? '#1C1B1F' : '#FFFBFE';
+    }
+
     const savedTheme = localStorage.getItem('calculator-theme');
-    if (savedTheme === 'dark') {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
       document.documentElement.setAttribute('data-theme', 'dark');
       themeIcon.innerHTML = SUN_ICON;
+      setThemeColor(true);
+    } else {
+      setThemeColor(false);
     }
 
     themeToggle.addEventListener('click', () => {
@@ -492,10 +557,12 @@
         document.documentElement.removeAttribute('data-theme');
         themeIcon.innerHTML = MOON_ICON;
         localStorage.setItem('calculator-theme', 'light');
+        setThemeColor(false);
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
         themeIcon.innerHTML = SUN_ICON;
         localStorage.setItem('calculator-theme', 'dark');
+        setThemeColor(true);
       }
     });
   </script>
