@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>计算器</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --md-sys-color-primary: #6750A4;
+      --md-sys-color-on-primary: #FFFFFF;
+      --md-sys-color-primary-container: #EADDFF;
+      --md-sys-color-on-primary-container: #21005D;
+      --md-sys-color-secondary: #625B71;
+      --md-sys-color-on-secondary: #FFFFFF;
+      --md-sys-color-outline: #79747E;
+      --md-sys-color-surface: #FFFBFE;
+      --md-sys-color-on-surface: #1C1B1F;
+      --md-sys-color-surface-container: #F3EDF7;
+      --md-sys-color-surface-container-high: #ECE6F0;
+      --md-sys-color-inverse-surface: #313033;
+      --md-sys-color-outline-variant: #CAC4D0;
+      --md-sys-color-shadow: #000000;
+      --md-sys-elevation-1: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
+      --md-sys-elevation-2: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
+      --md-sys-elevation-3: 0 4px 8px 3px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.3);
+      --md-sys-shape-corner-extra-large: 28px;
+      --md-sys-shape-corner-large: 16px;
+      --md-sys-shape-corner-medium: 12px;
+      --md-sys-state-hover-opacity: 0.08;
+      --md-sys-state-pressed-opacity: 0.12;
+      --md-sys-state-focus-opacity: 0.12;
+    }
+
+    [data-theme="dark"] {
+      --md-sys-color-primary: #D0BCFF;
+      --md-sys-color-on-primary: #381E72;
+      --md-sys-color-primary-container: #4F378B;
+      --md-sys-color-on-primary-container: #EADDFF;
+      --md-sys-color-secondary: #CCC2DC;
+      --md-sys-color-on-secondary: #332D41;
+      --md-sys-color-outline: #938F99;
+      --md-sys-color-surface: #1C1B1F;
+      --md-sys-color-on-surface: #E6E1E5;
+      --md-sys-color-surface-container: #211F26;
+      --md-sys-color-surface-container-high: #2B2930;
+      --md-sys-color-inverse-surface: #E6E1E5;
+      --md-sys-color-outline-variant: #49454F;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--md-sys-color-surface);
+      color: var(--md-sys-color-on-surface);
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .calculator {
+      width: min(100%, 360px);
+      padding: 24px;
+      background: var(--md-sys-color-surface-container);
+      border-radius: var(--md-sys-shape-corner-extra-large);
+      box-shadow: var(--md-sys-elevation-3);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .display-area {
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 16px 20px;
+      background: var(--md-sys-color-surface-container-high);
+      border-radius: var(--md-sys-shape-corner-large);
+      overflow: hidden;
+    }
+
+    .expression {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--md-sys-color-secondary);
+      min-height: 24px;
+      margin-bottom: 4px;
+      word-break: break-all;
+      text-align: right;
+    }
+
+    .result {
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      word-break: break-all;
+      text-align: right;
+      transition: transform 0.15s ease;
+    }
+
+    .buttons-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .btn {
+      aspect-ratio: 1;
+      min-height: 64px;
+      border: none;
+      border-radius: var(--md-sys-shape-corner-large);
+      font-family: inherit;
+      font-size: 1.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s, transform 0.1s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--md-sys-color-on-surface);
+      opacity: 0;
+      border-radius: inherit;
+      transition: opacity 0.15s;
+    }
+
+    .btn:hover::after {
+      opacity: var(--md-sys-state-hover-opacity);
+    }
+
+    .btn:active::after {
+      opacity: var(--md-sys-state-pressed-opacity);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--md-sys-color-primary);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn, .result {
+        transition: none;
+      }
+    }
+
+    .btn-number {
+      background: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+      box-shadow: var(--md-sys-elevation-1);
+    }
+
+    .btn-operator {
+      background: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+    }
+
+    .btn-operator.active {
+      background: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+    }
+
+    .btn-function {
+      background: var(--md-sys-color-surface-container);
+      color: var(--md-sys-color-on-surface);
+      border: 1px solid var(--md-sys-color-outline-variant);
+    }
+
+    .btn-equals {
+      background: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+    }
+
+    .btn-equals:hover::after {
+      background: var(--md-sys-color-on-primary);
+    }
+
+    .btn span.icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 48px;
+      height: 48px;
+      border: none;
+      border-radius: 24px;
+      background: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--md-sys-elevation-1);
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+    }
+
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--md-sys-color-primary);
+      outline-offset: 2px;
+    }
+
+    .theme-toggle svg {
+      width: 24px;
+      height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" aria-label="切换深色/浅色主题" title="切换主题">
+    <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+    </svg>
+  </button>
+
+  <main class="calculator" role="application" aria-label="计算器">
+    <div class="display-area">
+      <div class="expression" id="expression" aria-live="polite"></div>
+      <div class="result" id="result" aria-live="polite">0</div>
+    </div>
+
+    <div class="buttons-grid">
+      <button class="btn btn-function" data-action="clear" aria-label="清除所有">C</button>
+      <button class="btn btn-function" data-action="clear-entry" aria-label="清除当前输入">CE</button>
+      <button class="btn btn-function" data-action="backspace" aria-label="退格">
+        <span class="icon" aria-hidden="true">⌫</span>
+      </button>
+      <button class="btn btn-operator" data-action="operator" data-value="/" aria-label="除">÷</button>
+
+      <button class="btn btn-number" data-action="number" data-value="7">7</button>
+      <button class="btn btn-number" data-action="number" data-value="8">8</button>
+      <button class="btn btn-number" data-action="number" data-value="9">9</button>
+      <button class="btn btn-operator" data-action="operator" data-value="*" aria-label="乘">×</button>
+
+      <button class="btn btn-number" data-action="number" data-value="4">4</button>
+      <button class="btn btn-number" data-action="number" data-value="5">5</button>
+      <button class="btn btn-number" data-action="number" data-value="6">6</button>
+      <button class="btn btn-operator" data-action="operator" data-value="-" aria-label="减">−</button>
+
+      <button class="btn btn-number" data-action="number" data-value="1">1</button>
+      <button class="btn btn-number" data-action="number" data-value="2">2</button>
+      <button class="btn btn-number" data-action="number" data-value="3">3</button>
+      <button class="btn btn-operator" data-action="operator" data-value="+" aria-label="加">+</button>
+
+      <button class="btn btn-number" data-action="toggle-sign" aria-label="正负号切换">±</button>
+      <button class="btn btn-number" data-action="number" data-value="0">0</button>
+      <button class="btn btn-number" data-action="decimal" aria-label="小数点">.</button>
+      <button class="btn btn-equals" data-action="equals" aria-label="等于">=</button>
+    </div>
+  </main>
+
+  <script>
+    const expressionEl = document.getElementById('expression');
+    const resultEl = document.getElementById('result');
+    const themeToggle = document.querySelector('.theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    let currentValue = '0';
+    let previousValue = '';
+    let operator = null;
+    let shouldResetDisplay = false;
+
+    const SUN_ICON = '<path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 0 0 0-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>';
+    const MOON_ICON = '<path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>';
+
+    function updateDisplay() {
+      resultEl.textContent = formatDisplay(currentValue);
+      const expr = previousValue && operator
+        ? `${previousValue} ${getOperatorSymbol(operator)}`
+        : '';
+      expressionEl.textContent = expr;
+      updateOperatorActiveState();
+    }
+
+    function formatDisplay(value) {
+      if (value === '' || value === '-') return '0';
+      const num = parseFloat(value);
+      if (isNaN(num)) return '0';
+      if (num.toString().length > 12) {
+        return num.toExponential(6);
+      }
+      return value;
+    }
+
+    function getOperatorSymbol(op) {
+      const map = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+      return map[op] || op;
+    }
+
+    function updateOperatorActiveState() {
+      document.querySelectorAll('.btn-operator').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === operator);
+      });
+    }
+
+    function calculate(a, b, op) {
+      const x = parseFloat(a);
+      const y = parseFloat(b);
+      if (isNaN(x) || isNaN(y)) return '0';
+      let result;
+      switch (op) {
+        case '+': result = x + y; break;
+        case '-': result = x - y; break;
+        case '*': result = x * y; break;
+        case '/': result = y === 0 ? 'Error' : x / y; break;
+        default: return '0';
+      }
+      if (result === 'Error') return result;
+      const str = result.toString();
+      return str.length > 12 ? result.toExponential(8) : str;
+    }
+
+    function inputNumber(num) {
+      if (shouldResetDisplay) {
+        currentValue = num;
+        shouldResetDisplay = false;
+      } else {
+        if (currentValue === '0' && num !== '.') {
+          currentValue = num;
+        } else {
+          currentValue += num;
+        }
+      }
+      if (currentValue.length > 16) return;
+      updateDisplay();
+    }
+
+    function inputDecimal() {
+      if (shouldResetDisplay) {
+        currentValue = '0.';
+        shouldResetDisplay = false;
+      } else if (!currentValue.includes('.')) {
+        currentValue = currentValue || '0';
+        currentValue += '.';
+      }
+      updateDisplay();
+    }
+
+    function toggleSign() {
+      if (currentValue === '0' || currentValue === '') return;
+      currentValue = currentValue.startsWith('-')
+        ? currentValue.slice(1)
+        : '-' + currentValue;
+      updateDisplay();
+    }
+
+    function setOperator(op) {
+      if (previousValue && operator && !shouldResetDisplay) {
+        currentValue = calculate(previousValue, currentValue, operator);
+        if (currentValue === 'Error') {
+          previousValue = '';
+          operator = null;
+          shouldResetDisplay = true;
+          updateDisplay();
+          return;
+        }
+      } else {
+        previousValue = currentValue;
+      }
+      operator = op;
+      shouldResetDisplay = true;
+      updateDisplay();
+    }
+
+    function doEquals() {
+      if (!previousValue || !operator) return;
+      currentValue = calculate(previousValue, currentValue, operator);
+      previousValue = '';
+      operator = null;
+      shouldResetDisplay = true;
+      updateDisplay();
+    }
+
+    function clearAll() {
+      currentValue = '0';
+      previousValue = '';
+      operator = null;
+      shouldResetDisplay = false;
+      updateDisplay();
+    }
+
+    function clearEntry() {
+      currentValue = '0';
+      shouldResetDisplay = false;
+      updateDisplay();
+    }
+
+    function backspace() {
+      if (shouldResetDisplay) return;
+      if (currentValue.length <= 1) {
+        currentValue = '0';
+      } else {
+        currentValue = currentValue.slice(0, -1);
+      }
+      updateDisplay();
+    }
+
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        const value = btn.dataset.value;
+
+        switch (action) {
+          case 'number':
+            inputNumber(value);
+            break;
+          case 'decimal':
+            inputDecimal();
+            break;
+          case 'operator':
+            setOperator(value);
+            break;
+          case 'equals':
+            doEquals();
+            break;
+          case 'clear':
+            clearAll();
+            break;
+          case 'clear-entry':
+            clearEntry();
+            break;
+          case 'backspace':
+            backspace();
+            break;
+          case 'toggle-sign':
+            toggleSign();
+            break;
+        }
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        inputNumber(e.key);
+      } else if (e.key === '.') {
+        e.preventDefault();
+        inputDecimal();
+      } else if (['+', '-', '*', '/'].includes(e.key)) {
+        e.preventDefault();
+        setOperator(e.key);
+      } else if (e.key === 'Enter' || e.key === '=') {
+        e.preventDefault();
+        doEquals();
+      } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+        e.preventDefault();
+        clearAll();
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        backspace();
+      }
+    });
+
+    const savedTheme = localStorage.getItem('calculator-theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      themeIcon.innerHTML = SUN_ICON;
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        themeIcon.innerHTML = MOON_ICON;
+        localStorage.setItem('calculator-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeIcon.innerHTML = SUN_ICON;
+        localStorage.setItem('calculator-theme', 'dark');
+      }
+    });
+  </script>
+</body>
+</html>
